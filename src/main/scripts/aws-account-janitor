@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+
+import sys
+import time
+
+import boto3
+import click
+
+import aws_account_janitor.rds as rds
+import aws_account_janitor.logs as logs
+
+from aws_account_janitor.logging import log
+
+cf = boto3.client('cloudformation')
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.option('--status', default='DELETE_IN_PROGRESS', help='status of cloudformation stacks to search for.')
+@click.option('--timeout', default=120, help='Seconds after which waiting should timeout.')
+def wait_for_stacks(status, timeout):
+    all_stacks_changed = False
+    click.echo('Looking for {} stacks and wait (max. {}s) for them to change their status.'.format(
+        status, timeout))
+    wait_until = time.time() + timeout
+    pending = {n['StackName'] for n in cf.list_stacks(
+        StackStatusFilter=status.split())['StackSummaries']}
+    log('>> Found {} stacks.'.format(len(pending)))
+    for stack in pending:
+        log('- {}'.format(stack))
+    log('Waiting ...')
+
+    while True:
+        if len(pending) < 1:
+            print('<< Voila, all found stacks deleted.')
+            all_stacks_changed = True
+            break
+        if time.time() >= wait_until:
+            print('<< Got bored of waiting. Timeout after: {} s.'.format(timeout))
+            break
+        time.sleep(2)
+        stacks = {n['StackName'] for n in cf.list_stacks(
+            StackStatusFilter=status.split())['StackSummaries']}
+        changed = pending - stacks
+        for stack in changed:
+            log('deleted: {}'.format(stack))
+        pending = stacks & pending
+    return all_stacks_changed
+
+
+@cli.command()
+@click.option('--status', default='DELETE_FAILED', help='Status of cloudformation stack to search for.')
+def cleanup_cf_stacks(status, no_action=True):
+    log('Looking out for {} stacks ...'.format(status))
+    result = cf.list_stacks(
+        StackStatusFilter=[status])
+    stacks = result['StackSummaries']
+    for stack in stacks:
+        name = stack['StackName']
+        log('found: {}'.format(name))
+
+    if no_action and click.confirm('Should we delete the above stacks?'):
+        click.echo('Ok, gonna take some time to delete multiple stacks ...')
+        for stack in stacks:
+            log('initiating deletion of {}'.format(stack['StackName']))
+            cf.delete_stack(StackName=stack['StackName'])
+
+
+@cli.command()
+def cleanup_rds_snapshots():
+    rds.cleanup_snapshots(snapshot_type='manual')
+
+
+@cli.command()
+@click.option('--retention', default=7, help='Retention in days for found log groups.')
+def set_missing_log_retentions(retention):
+    logs.set_retention_for_missing(retention)
+
+
+if __name__ == '__main__':
+    result = cli()
+    if result:
+        sys.exit(0)
+    else:
+        sys.exit(1)
