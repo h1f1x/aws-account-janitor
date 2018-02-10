@@ -6,6 +6,7 @@ import time
 import boto3
 import click
 
+import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
 import aws_account_janitor.logs as logs
 
@@ -54,20 +55,8 @@ def wait_for_stacks(status, timeout):
 
 @cli.command()
 @click.option('--status', default='DELETE_FAILED', help='Status of cloudformation stack to search for.')
-def cleanup_cf_stacks(status, no_action=True):
-    log('Looking out for {} stacks ...'.format(status))
-    result = cf.list_stacks(
-        StackStatusFilter=[status])
-    stacks = result['StackSummaries']
-    for stack in stacks:
-        name = stack['StackName']
-        log('found: {}'.format(name))
-
-    if no_action and click.confirm('Should we delete the above stacks?'):
-        click.echo('Ok, gonna take some time to delete multiple stacks ...')
-        for stack in stacks:
-            log('initiating deletion of {}'.format(stack['StackName']))
-            cf.delete_stack(StackName=stack['StackName'])
+def cleanup_cf_stacks(status, interactive=True):
+    cloudformation.cleanup(status=status, interactive=interactive)
 
 
 @cli.command()
