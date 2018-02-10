@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import time
 
 import boto3
 import click
@@ -9,8 +8,6 @@ import click
 import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
 import aws_account_janitor.logs as logs
-
-from aws_account_janitor.logging import log
 
 cf = boto3.client('cloudformation')
 
@@ -24,33 +21,7 @@ def cli():
 @click.option('--status', default='DELETE_IN_PROGRESS', help='status of cloudformation stacks to search for.')
 @click.option('--timeout', default=120, help='Seconds after which waiting should timeout.')
 def wait_for_stacks(status, timeout):
-    all_stacks_changed = False
-    click.echo('Looking for {} stacks and wait (max. {}s) for them to change their status.'.format(
-        status, timeout))
-    wait_until = time.time() + timeout
-    pending = {n['StackName'] for n in cf.list_stacks(
-        StackStatusFilter=status.split())['StackSummaries']}
-    log('>> Found {} stacks.'.format(len(pending)))
-    for stack in pending:
-        log('- {}'.format(stack))
-    log('Waiting ...')
-
-    while True:
-        if len(pending) < 1:
-            print('<< Voila, all found stacks deleted.')
-            all_stacks_changed = True
-            break
-        if time.time() >= wait_until:
-            print('<< Got bored of waiting. Timeout after: {} s.'.format(timeout))
-            break
-        time.sleep(2)
-        stacks = {n['StackName'] for n in cf.list_stacks(
-            StackStatusFilter=status.split())['StackSummaries']}
-        changed = pending - stacks
-        for stack in changed:
-            log('deleted: {}'.format(stack))
-        pending = stacks & pending
-    return all_stacks_changed
+    cloudformation.wait_for_status_change(status=status, timeout=timeout)
 
 
 @cli.command()
