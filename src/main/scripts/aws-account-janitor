@@ -8,6 +8,7 @@ import click
 import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
 import aws_account_janitor.logs as logs
+import aws_account_janitor.ecr as ecr
 
 cf = boto3.client('cloudformation')
 
@@ -35,6 +36,12 @@ def cleanup_cf_stacks(status, interactive=True):
 @cli.command()
 def cleanup_rds_snapshots():
     rds.cleanup_snapshots(snapshot_type='manual')
+
+
+@cli.command()
+@click.option('--name', help='Repository Name')
+def cleanup_ecr_images(name):
+    ecr.purge_images(name)
 
 
 @cli.command()
