@@ -5,7 +5,7 @@ import time
 from aws_account_janitor.logging import log
 
 
-def get_stacknames_by_status(status):
+def list_stacknames_by_status(status):
     cf = boto3.client('cloudformation')
     result = cf.list_stacks(StackStatusFilter=[status])
     stacks = result['StackSummaries']
@@ -15,7 +15,7 @@ def get_stacknames_by_status(status):
 def cleanup(status, interactive=True):
     cf = boto3.client('cloudformation')
     log('Looking out for {} stacks ...'.format(status))
-    stacks = get_stacknames_by_status(status)
+    stacks = list_stacknames_by_status(status)
     for stack_name in stacks:
         print('found: {}'.format(stack_name))
     if len(stacks) < 1:

@@ -18,14 +18,16 @@ def cli():
 
 
 @cli.command()
-@click.option('--status', default='DELETE_IN_PROGRESS', help='status of cloudformation stacks to search for.')
+@click.option('--status', default='DELETE_IN_PROGRESS',
+              help='status of cloudformation stacks to search for.')
 @click.option('--timeout', default=120, help='Seconds after which waiting should timeout.')
 def wait_for_stacks(status, timeout):
     cloudformation.wait_for_status_change(status=status, timeout=timeout)
 
 
 @cli.command()
-@click.option('--status', default='DELETE_FAILED', help='Status of cloudformation stack to search for.')
+@click.option('--status', default='DELETE_FAILED',
+              help='Status of cloudformation stack to search for.')
 def cleanup_cf_stacks(status, interactive=True):
     cloudformation.cleanup(status=status, interactive=interactive)
 
