@@ -36,8 +36,8 @@ EXAMPLE_DOCKER_MANIFEST = '''
 }
 '''
 
-class ECRTests(unittest.TestCase):
 
+class ECRTests(unittest.TestCase):
 
     def setup(self):
         client = boto3.client('ecr')
