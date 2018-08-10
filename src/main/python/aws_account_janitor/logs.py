@@ -3,23 +3,6 @@ import time
 from .logging import log
 
 
-def list_log_groups():
-    client = boto3.client('logs')
-    attrs = {}
-    log_groups = []
-    while True:
-        result = client.describe_log_groups(**attrs)
-        log_groups.extend(result['logGroups'])
-        if 'nextToken' not in result:
-            break
-        attrs['nextToken'] = result['nextToken']
-    return log_groups
-
-
-def list_log_groups_wo_retention():
-    return [g for g in list_log_groups() if 'retentionInDays' not in g]
-
-
 def get_last_event_time(log_group_name):
     client = boto3.client('logs')
     response = client.describe_log_streams(
@@ -65,8 +48,27 @@ def get_time_in_millis():
     return int(round(time.time() * 1000))
 
 
-def set_retention_for_missing(days=7):
+def set_retention_for_missing(days=7, dry_run=False):
     client = boto3.client('logs')
+    print(list_log_groups_wo_retention())
     for group in list_log_groups_wo_retention():
-        log('Setting retention to {} days for: {}'.format(days, group['logGroupName']))
-        client.put_retention_policy(logGroupName=group['logGroupName'], retentionInDays=days)
+        log('Setting retention to {} days for: {}'.format(days, group['logGroupName']), dry_run=dry_run)
+        if not dry_run:
+            client.put_retention_policy(logGroupName=group['logGroupName'], retentionInDays=days)
+
+
+def list_log_groups_wo_retention():
+    return [g for g in list_log_groups() if 'retentionInDays' not in g]
+
+
+def list_log_groups():
+    client = boto3.client('logs')
+    attrs = {}
+    log_groups = []
+    while True:
+        result = client.describe_log_groups(**attrs)
+        log_groups.extend(result['logGroups'])
+        if 'nextToken' not in result:
+            break
+        attrs['nextToken'] = result['nextToken']
+    return log_groups

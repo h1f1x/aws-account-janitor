@@ -161,3 +161,14 @@ class CloudwatchLogsTests(unittest.TestCase):
         {'logGroupName': 'bar'}
         result = logs.list_not_used_log_groups()
         self.assertEqual(0, len(result))
+
+    @patch('aws_account_janitor.logs.list_log_groups_wo_retention')
+    @patch('boto3.client')
+    def test_set_retention_for_missing_dry_run(self,
+                                               boto3_client_mock,
+                                               list_log_groups_wo_retention_mock):
+        mock = MagicMock()
+        boto3_client_mock.return_value = mock
+        list_log_groups_wo_retention_mock.return_value = self.describe_log_groups()['logGroups']
+        logs.set_retention_for_missing(days=7, dry_run=True)
+        mock.put_retention_policy.assert_not_called()
