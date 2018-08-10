@@ -12,8 +12,10 @@ import aws_account_janitor.ecr as ecr
 
 
 @click.group()
-def cli():
-    pass
+@click.option('--dry_run', '-n', is_flag=True, help='dry run')
+@click.pass_context
+def cli(ctx, dry_run):
+    ctx.obj['DRY_RUN'] = dry_run
 
 
 # -----------------------------------------------------------------------------
@@ -21,6 +23,7 @@ def cli():
 @cli.group()
 @click.pass_context
 def cf(ctx):
+    _cover_your_ass_because_dry_run_not_available(ctx)
     pass
 
 
@@ -44,6 +47,7 @@ def cleanup_cf_stacks(status, interactive=True):
 @cli.group()
 @click.pass_context
 def rds(ctx):
+    _cover_your_ass_because_dry_run_not_available(ctx)
     pass
 
 
@@ -57,6 +61,7 @@ def cleanup_snapshots():
 @cli.group()
 @click.pass_context
 def ecr(ctx):
+    _cover_your_ass_because_dry_run_not_available(ctx)
     pass
 
 
@@ -81,14 +86,23 @@ def orphans():
 
 @logs.command()
 @click.option('--retention', default=7, help='Retention in days for found log groups.')
-def set_missing_log_retentions(retention):
-    cwlogs.set_retention_for_missing(retention)
+@click.pass_context
+def set_missing_log_retentions(ctx, retention):
+    cwlogs.set_retention_for_missing(retention, dry_run=ctx.obj['DRY_RUN'])
 
 
 # -----------------------------------------------------------------------------
 
+def _cover_your_ass_because_dry_run_not_available(ctx):
+    if ctx.obj['DRY_RUN']:
+        click.echo('DRY RUN not available for this command. Subcommand will be executed for real!')
+        if not click.confirm('Do you want to continue?'):
+            click.echo('Abort!')
+            sys.exit(1)
+
+
 if __name__ == '__main__':
-    result = cli()
+    result = cli(obj={})
     if result:
         sys.exit(0)
     else:
