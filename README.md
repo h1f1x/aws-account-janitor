@@ -14,15 +14,29 @@ pyb install
 # Usage
 
 ```
-$ aws-account-janitor
+$ aws-account-janitor --help
 Usage: aws-account-janitor [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --help  Show this message and exit.
 
 Commands:
+  cf
+  ecr
+  logs
+  rds
+```
+
+Now you can get help on the commands with:
+
+```
+$ aws-account-janitor cf --help
+Usage: aws-account-janitor cf [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
   cleanup_cf_stacks
-  cleanup_rds_snapshots
-  set_missing_log_retentions
   wait_for_stacks
 ```

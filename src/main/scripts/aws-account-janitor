@@ -7,7 +7,7 @@ import click
 
 import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
-import aws_account_janitor.logs as logs
+import aws_account_janitor.logs as cwlogs
 import aws_account_janitor.ecr as ecr
 
 cf = boto3.client('cloudformation')
@@ -18,7 +18,15 @@ def cli():
     pass
 
 
-@cli.command()
+# -----------------------------------------------------------------------------
+
+@cli.group()
+@click.pass_context
+def cf(ctx):
+    pass
+
+
+@cf.command()
 @click.option('--status', default='DELETE_IN_PROGRESS',
               help='status of cloudformation stacks to search for.')
 @click.option('--timeout', default=120, help='Seconds after which waiting should timeout.')
@@ -26,29 +34,60 @@ def wait_for_stacks(status, timeout):
     cloudformation.wait_for_status_change(status=status, timeout=timeout)
 
 
-@cli.command()
+@cf.command()
 @click.option('--status', default='DELETE_FAILED',
               help='Status of cloudformation stack to search for.')
 def cleanup_cf_stacks(status, interactive=True):
     cloudformation.cleanup(status=status, interactive=interactive)
 
 
-@cli.command()
-def cleanup_rds_snapshots():
+# -----------------------------------------------------------------------------
+
+@cli.group()
+@click.pass_context
+def rds(ctx):
+    pass
+
+
+@rds.command()
+def cleanup_snapshots():
     rds.cleanup_snapshots(snapshot_type='manual')
 
 
-@cli.command()
+# -----------------------------------------------------------------------------
+
+@cli.group()
+@click.pass_context
+def ecr(ctx):
+    pass
+
+
+@ecr.command()
 @click.option('--name', help='Repository Name')
 def cleanup_ecr_images(name):
     ecr.purge_images(name)
 
 
-@cli.command()
+# -----------------------------------------------------------------------------
+
+@cli.group()
+@click.pass_context
+def logs(ctx):
+    pass
+
+
+@logs.command()
+def orphans():
+    print(cwlogs.list_not_used_log_groups())
+
+
+@logs.command()
 @click.option('--retention', default=7, help='Retention in days for found log groups.')
 def set_missing_log_retentions(retention):
-    logs.set_retention_for_missing(retention)
+    cwlogs.set_retention_for_missing(retention)
 
+
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
     result = cli()
