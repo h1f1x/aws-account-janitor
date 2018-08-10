@@ -2,15 +2,12 @@
 
 import sys
 
-import boto3
 import click
 
 import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
 import aws_account_janitor.logs as cwlogs
 import aws_account_janitor.ecr as ecr
-
-cf = boto3.client('cloudformation')
 
 
 @click.group()
