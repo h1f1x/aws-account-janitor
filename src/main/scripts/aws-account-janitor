@@ -3,6 +3,7 @@
 import sys
 
 import click
+import json
 
 import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
@@ -75,7 +76,7 @@ def logs(ctx):
 
 @logs.command()
 def orphans():
-    print(cwlogs.list_not_used_log_groups())
+    print(json.dumps(cwlogs.list_not_used_log_groups()))
 
 
 @logs.command()
