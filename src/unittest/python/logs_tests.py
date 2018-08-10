@@ -113,6 +113,23 @@ class CloudwatchLogsTests(unittest.TestCase):
         result = logs.get_last_event_time('foo')
         self.assertEqual(None, result)
 
+    @patch('boto3.client')
+    def test_get_last_event_time__no_last_event_time_in_streams(self, mock):
+        client = MagicMock()
+        client.describe_log_streams.return_value = {
+            'logStreams': [
+                        {
+                            'logStreamName': 'string',
+                            'creationTime': 1,
+                            'arn': 'string',
+                            'storedBytes': 0
+                        },
+                    ]}
+        mock.return_value = client
+
+        result = logs.get_last_event_time('foo')
+        self.assertEqual(None, result)
+
     @patch('aws_account_janitor.logs.get_time_in_millis')
     @patch('aws_account_janitor.logs.get_offset')
     @patch('aws_account_janitor.logs.list_log_groups')

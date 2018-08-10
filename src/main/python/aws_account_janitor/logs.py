@@ -27,7 +27,9 @@ def get_last_event_time(log_group_name):
                 orderBy='LastEventTime',
                 descending=True,
                 limit=1)
-    return response['logStreams'][0]['lastEventTimestamp'] if len(response['logStreams']) else None
+    if not len(response['logStreams']):
+        return None
+    return response['logStreams'][0].get('lastEventTimestamp')
 
 
 def list_not_used_log_groups(multiplier=2):
@@ -40,11 +42,17 @@ def list_not_used_log_groups(multiplier=2):
     result = []
     now = get_time_in_millis()
     for group in log_groups:
+        orphan = False
         if 'retentionInDays' not in group:
             continue
         last_event_time = get_last_event_time(group['logGroupName'])
-        offset = multiplier * get_offset(group['retentionInDays'])
-        if last_event_time + offset < now:
+        if not last_event_time:
+            orphan = True
+        else:
+            offset = multiplier * get_offset(group['retentionInDays'])
+            if last_event_time + offset < now:
+                orphan = True
+        if orphan:
             result.append(group)
     return result
 
