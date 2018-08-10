@@ -50,7 +50,6 @@ def get_time_in_millis():
 
 def set_retention_for_missing(days=7, dry_run=False):
     client = boto3.client('logs')
-    print(list_log_groups_wo_retention())
     for group in list_log_groups_wo_retention():
         log('Setting retention to {} days for: {}'.format(days, group['logGroupName']), dry_run=dry_run)
         if not dry_run:
