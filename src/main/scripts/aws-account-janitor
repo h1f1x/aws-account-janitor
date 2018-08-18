@@ -9,6 +9,7 @@ import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
 import aws_account_janitor.logs as cwlogs
 import aws_account_janitor.ecr as ecr
+import aws_account_janitor.resources as resources
 
 
 @click.group()
@@ -89,6 +90,18 @@ def orphans():
 @click.pass_context
 def set_missing_log_retentions(ctx, retention):
     cwlogs.set_retention_for_missing(retention, dry_run=ctx.obj['DRY_RUN'])
+
+
+# -----------------------------------------------------------------------------
+
+@cli.group()
+def tags():
+    pass
+
+
+@tags.command()
+def list_resources():
+    print(json.dumps(resources.get()))
 
 
 # -----------------------------------------------------------------------------

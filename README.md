@@ -18,13 +18,15 @@ $ aws-account-janitor --help
 Usage: aws-account-janitor [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --help  Show this message and exit.
+  -n, --dry_run  dry run
+  --help         Show this message and exit.
 
 Commands:
   cf
   ecr
   logs
   rds
+  tags
 ```
 
 Now you can get help on the commands with:
