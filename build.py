@@ -19,6 +19,5 @@ def set_properties(project):
     project.build_depends_on("moto")
     project.depends_on("boto3")
     project.depends_on("click")
-    project.depends_on("json")
 
     project.set_property('coverage_break_build', False)
