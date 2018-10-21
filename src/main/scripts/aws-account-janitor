@@ -9,6 +9,7 @@ import sys
 import aws_account_janitor.cloudformation as cloudformation
 import aws_account_janitor.rds as rds
 import aws_account_janitor.logs as cwlogs
+import aws_account_janitor.dynamodb as ddb
 import aws_account_janitor.ecr as ecr
 import aws_account_janitor.resources as resources
 
@@ -111,6 +112,21 @@ def list_resources():
     result = resources.human_readable(resources.get(tag_filters))
     for r in result:
         print('{:10}: {} {}'.format(r['service'], r['name'], r['id']))
+
+
+# -----------------------------------------------------------------------------
+
+@cli.group()
+@click.pass_context
+def dynamodb(ctx):
+    _cover_your_ass_because_dry_run_not_available(ctx)
+    pass
+
+
+@dynamodb.command()
+@click.pass_context
+def cleanup_backups(ctx):
+    ddb.cleanup_backups(dry_run=ctx.obj['DRY_RUN'])
 
 
 # -----------------------------------------------------------------------------

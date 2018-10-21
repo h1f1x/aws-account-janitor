@@ -23,6 +23,7 @@ Options:
 
 Commands:
   cf
+  dynamodb
   ecr
   logs
   rds
