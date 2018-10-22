@@ -4,7 +4,7 @@ from .logging import log
 client = boto3.client('dynamodb')
 
 
-def cleanup_backups(dry_run):
+def cleanup_backups(dry_run=False):
     for backups in client.get_paginator('list_backups').paginate():
         for backup in backups['BackupSummaries']:
             log_prefix = '[DRY RUN] ' if dry_run else ''
