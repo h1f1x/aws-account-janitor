@@ -119,7 +119,6 @@ def list_resources():
 @cli.group()
 @click.pass_context
 def dynamodb(ctx):
-    _cover_your_ass_because_dry_run_not_available(ctx)
     pass
 
 
@@ -127,6 +126,12 @@ def dynamodb(ctx):
 @click.pass_context
 def cleanup_backups(ctx):
     ddb.cleanup_backups(dry_run=ctx.obj['DRY_RUN'])
+
+
+@dynamodb.command()
+@click.pass_context
+def cleanup_tables(ctx):
+    ddb.cleanup_tables(dry_run=ctx.obj['DRY_RUN'])
 
 
 # -----------------------------------------------------------------------------
