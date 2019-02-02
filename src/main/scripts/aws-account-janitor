@@ -7,7 +7,7 @@ import sys
 
 
 import aws_account_janitor.cloudformation as cloudformation
-import aws_account_janitor.rds as rds
+import aws_account_janitor.rds as _rds
 import aws_account_janitor.logs as cwlogs
 import aws_account_janitor.dynamodb as ddb
 import aws_account_janitor.ecr as ecr
@@ -56,7 +56,7 @@ def rds(ctx):
 
 @rds.command()
 def cleanup_snapshots():
-    rds.cleanup_snapshots(snapshot_type='manual')
+    _rds.cleanup_snapshots(snapshot_type='manual')
 
 
 # -----------------------------------------------------------------------------
