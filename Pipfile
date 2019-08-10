@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 unittest2 = "*"
 moto = "*"
+flake8 = "*"
 
 [packages]
 boto3 = "*"
